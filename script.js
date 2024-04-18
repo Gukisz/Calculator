@@ -1,7 +1,8 @@
 const CLEAR_SCR = 0, OPERATOR_APPEND = 1, NUMBER_SIGN = 2, PARAMS = 3, NUMBER = 4, BACKSPACE = 5, EVALUATION = 6;
 
-let lastInputType = CLEAR_SCR;
-let curExprIsFrac = false;
+/* Stores all the user Inputs types, it's important to a good backscape functionality (and easy to implement) */ 
+let inputType = [CLEAR_SCR]; 
+let inputTypeNum = 0;
 
 function updateScreen(text)
 {
@@ -10,15 +11,18 @@ function updateScreen(text)
 
 function clearScreen()
 {
-	lastInputType = CLEAR_SCR;
+	inputTypeNum = 0; 
+	inputType[inputTypeNum] = CLEAR_SCR;
+
 	updateScreen('0');
 }
 
 function deleteLast()
 {
 	let screenText = document.getElementById('screen').innerText;
-	
-	lastInputType = BACKSPACE;
+
+	if (inputTypeNum > 0) inputTypeNum--;
+
 	if (screenText.length > 1) {
 		updateScreen(screenText.slice(0, -1));
 	} else {
@@ -32,27 +36,27 @@ function appendData(kind, string)
 
 	if (kind >= BACKSPACE || kind <= CLEAR_SCR) return; 
 	
-	if (lastInputType == OPERATOR_APPEND) 
+	if (inputType[inputTypeNum] == OPERATOR_APPEND) 
 		screenInnerText += ' ';
 	
-	if (lastInputType === CLEAR_SCR || (lastInputType === EVALUATION && screenInnerText === '0')) {
-		lastInputType = CLEAR_SCR; 
+	if (inputType[inputTypeNum] === CLEAR_SCR || (inputType[inputTypeNum] === EVALUATION && screenInnerText === '0')) {
+		inputType[inputTypeNum] = CLEAR_SCR; 
 		screenInnerText = '';
 	}
 
 	if (kind === OPERATOR_APPEND) {
-		if (lastInputType === OPERATOR_APPEND || lastInputType === CLEAR_SCR) {
+		if (inputType[inputTypeNum] === OPERATOR_APPEND || inputType[inputTypeNum] === CLEAR_SCR) {
 			if ((string !== '+' && string !== '-')) return;
 			kind = NUMBER_SIGN;
 			updateScreen(screenInnerText + string);
-		} else if (lastInputType !== NUMBER_SIGN) {
+		} else if (inputType[inputTypeNum] !== NUMBER_SIGN) {
 			updateScreen(screenInnerText + ' ' + string + ' ');
 		} else {
 			return;
 		}
 
 		curExprIsFrac = false;
-		lastInputType = kind;
+		inputType[++inputTypeNum] = kind;
 		return;
 	}
 
@@ -61,7 +65,7 @@ function appendData(kind, string)
 		curExprIsFrac = true;
 	}
 
-	lastInputType = kind;
+	inputType[++inputTypeNum] = kind;
 	updateScreen(screenInnerText + string);
 }
 
@@ -120,11 +124,12 @@ class PostFixExpression {
 
 function evaluateExpression()
 {
-	if (lastInputType === OPERATOR_APPEND || lastInputType === NUMBER_SIGN) return;
+	if (inputType[inputTypeNum] === OPERATOR_APPEND || inputType[inputTypeNum] === NUMBER_SIGN) return;
 	let postFix = new PostFixExpression(document.getElementById('screen').innerText);
 	let result = postFix.solve();
 
-	lastInputType = EVALUATION;
+	inputTypeNum = 0;
+	inputType[inputTypeNum] = EVALUATION;
 
 	if (result % 1 !== 0) {
 		updateScreen(String(result.toFixed(2)));
