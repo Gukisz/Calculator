@@ -11,8 +11,8 @@
     
 
     <div class="wrapper">
-        <section class="screen">
-            <span id="screen"> 0 </span>
+	<section class="screen">
+		<span id="screen"> 0 </span>
         </section>
     
         <section class="calc-buttons">
@@ -23,69 +23,67 @@
                 <button tabindex="-1" class="calc-button" onclick="deleteLast()">
                     &larr;
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendOperator('/')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(OPERATOR_APPEND, '/')">
                     &divide;
                 </button>
             </div>
 
             <div class="calc-button-row">
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('7')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '7')">
                     7
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('8')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '8')">
                     8
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('9')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '9')">
                     9
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendOperator('*')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(OPERATOR_APPEND, '*')">
                     &times;
                 </button>
             </div>
 
             <div class="calc-button-row">
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('4')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '4')">
                     4
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('5')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '5')">
                     5
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('6')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '6')">
                     6
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendOperator('-')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(OPERATOR_APPEND, '-')">
                     &minus;
                 </button>
             </div>
 
             <div class="calc-button-row">
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('1')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '1')">
                     1
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('2')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '2')">
                     2
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendNumber('3')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(NUMBER, '3')">
                     3
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="appendOperator('+')">
+                <button tabindex="-1" class="calc-button" onclick="appendData(OPERATOR_APPEND, '+')">
                     &plus;
                 </button>
             </div>
 
             <div class="calc-button-row">
-                <button tabindex="-1" class="calc-button triple" onclick="appendNumber('0')">
+                <button tabindex="-1" class="calc-button triple" onclick="appendData(NUMBER, '0')">
                     0
                 </button>
-                <button tabindex="-1" class="calc-button" onclick="evalAndDisplay()">
+                <button tabindex="-1" class="calc-button" onclick="evaluateExpression()">
                     &equals;
                 </button>
             </div>
         </section>
     
     </div>
-
-
 
     <script src="script.js"></script>
 </body>
