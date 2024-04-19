@@ -143,6 +143,7 @@ function evaluateExpression()
 	inputArray = [inputTypes.evaluation];
 	if (result % 1 !== 0) {
 		updateScreen(String(result.toFixed(2)));
+		curExprIsFrac = true;
 	} else {
 		updateScreen(String(result));
 	}
@@ -165,7 +166,7 @@ function treatKeyboardInput(event)
 	case '*': appendData(inputTypes.operator, '*'); break;
 	case '+': appendData(inputTypes.operator, '+'); break;
 	case '-': appendData(inputTypes.operator, '-'); break;
-	case '.': appendData(inputTypes.number, '.'); 
+	case '.': appendData(inputTypes.number, '.'); break;
 	case 'Enter':
 	case '=':
 		evaluateExpression(); break;
