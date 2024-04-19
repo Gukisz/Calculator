@@ -6,7 +6,10 @@ let inputTypeNum = 0;
 
 function updateScreen(text)
 {
-	document.getElementById('screen').innerText = text;
+	let screen = document.getElementById('screen');
+
+	screen.innerText = text;
+	screen.scrollLeft = screen.scrollWidth;
 }
 
 function clearScreen()
@@ -32,7 +35,7 @@ function deleteLast()
 
 function appendData(kind, string)
 {
-	let screenInnerText = String(document.getElementById('screen').innerText); 
+	let screenInnerText = document.getElementById('screen').innerText;	
 
 	if (kind >= BACKSPACE || kind <= CLEAR_SCR) return; 
 	
@@ -71,26 +74,27 @@ function appendData(kind, string)
 
 class PostFixExpression {
 	constructor(expression) {
+		this.stack = [];
+
 		const precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '%': 2};
 		const tokens = expression.split(' ').filter(item => item);
-
-		const outputQueue = [];
+		
 		const operatorStack = [];
 
 		for (let i = 0; i < tokens.length; ++i) {
 			if (/\d/.test(tokens[i])) { /* Digit, a good notice (no work) */
-				outputQueue.push(tokens[i]);
+				this.stack.push(tokens[i]);
 			} else { /* Operators... */
 				while (operatorStack.length > 0 && precedence[operatorStack[operatorStack.length - 1]] >= precedence[tokens[i]])
-					outputQueue.push(operatorStack.pop());
+					this.stack.push(operatorStack.pop());
 				operatorStack.push(tokens[i]);
 			}
 		}
 
 		while (operatorStack.length > 0)
-			outputQueue.push(operatorStack.pop());
+			this.stack.push(operatorStack.pop());
 
-		this.stack = outputQueue; 
+		console.log(tokens); 
 		console.log(this.stack); 
 	}
 
@@ -101,8 +105,11 @@ class PostFixExpression {
 			if (/\d/.test(this.stack[i])) {
 				stack.push(Number(this.stack[i]));
 			} else {
+				console.log(stack); 
+
 				const b = stack.pop(); 
-				const a = stack.pop();	
+				const a = stack.pop();
+
 				switch (this.stack[i]) {
 				case '+':
 					stack.push(a + b); break;
@@ -115,9 +122,11 @@ class PostFixExpression {
 				case '%':
 					stack.push(a % b); break;
 				}
+				
+				console.log(stack); 
 			}
 		}
-
+		
 		return stack.pop();
 	}
 };
@@ -125,6 +134,7 @@ class PostFixExpression {
 function evaluateExpression()
 {
 	if (inputType[inputTypeNum] === OPERATOR_APPEND || inputType[inputTypeNum] === NUMBER_SIGN) return;
+
 	let postFix = new PostFixExpression(document.getElementById('screen').innerText);
 	let result = postFix.solve();
 
