@@ -8,6 +8,7 @@ const inputTypes = {
 
 /* Stores all the user Inputs types, it's important to a good backscape functionality (and easy to implement) */ 
 let inputArray = [inputTypes.clearScreen]; 
+let curExprIsFrac = false;
 
 function updateScreen(text)
 {
@@ -28,7 +29,9 @@ function deleteLast()
 	let screenText = document.getElementById('screen').innerText;
 
 	if (inputArray.length > 0) inputArray.pop();
+	
 	if (screenText.length > 1) {
+		if (screenText[screenText.length - 1] === '.') curExprIsFrac = false;
 		updateScreen(screenText.slice(0, -1));
 	} else {
 		clearScreen();
@@ -43,7 +46,7 @@ function appendData(type, string)
 	if (inputArray[inputArray.length - 1] === inputTypes.operator) 
 		screenInnerText += ' ';
 	
-	if (inputArray[inputArray.length - 1] === inputTypes.clearScreen || (inputArray[inputArray.length - 1] === inputTypes.evaluation && screenInnerText === '0')) {
+	if (!(type === inputTypes.number && string === '.') && (inputArray[inputArray.length - 1] === inputTypes.clearScreen || (inputArray[inputArray.length - 1] === inputTypes.evaluation && screenInnerText === '0'))) {
 		inputArray[inputArray.length - 1] = inputTypes.clearScreen; 
 		screenInnerText = '';
 	}
