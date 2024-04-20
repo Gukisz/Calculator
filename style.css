@@ -3,6 +3,13 @@ html{
     height: 100%;
 }
 
+/***** Prevents display screen to be break ****/
+#screen {
+	white-space: nowrap;
+	overflow-x:  hidden;
+	display:     block;
+}
+
 *,
 *::before
 *::after{

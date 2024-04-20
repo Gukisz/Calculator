@@ -1,19 +1,26 @@
-const CLEAR_SCR = 0, OPERATOR_APPEND = 1, NUMBER_SIGN = 2, PARAMS = 3, NUMBER = 4, BACKSPACE = 5, EVALUATION = 6;
+const inputTypes = {
+	clearScreen: 0,
+	operator: 1, 
+	numberSignal: 2,
+	number: 3,
+	evaluation: 4,
+};
 
 /* Stores all the user Inputs types, it's important to a good backscape functionality (and easy to implement) */ 
-let inputType = [CLEAR_SCR]; 
-let inputTypeNum = 0;
+let inputArray = [inputTypes.clearScreen]; 
+let curExprIsFrac = false;
 
 function updateScreen(text)
 {
-	document.getElementById('screen').innerText = text;
+	let screen = document.getElementById('screen');
+
+	screen.innerText = text;
+	screen.scrollLeft = screen.scrollWidth;
 }
 
 function clearScreen()
 {
-	inputTypeNum = 0; 
-	inputType[inputTypeNum] = CLEAR_SCR;
-
+	inputArray = [inputTypes.clearScreen];
 	updateScreen('0');
 }
 
@@ -21,76 +28,78 @@ function deleteLast()
 {
 	let screenText = document.getElementById('screen').innerText;
 
-	if (inputTypeNum > 0) inputTypeNum--;
-
+	if (inputArray.length > 0) inputArray.pop();
+	
 	if (screenText.length > 1) {
+		if (screenText[screenText.length - 1] === '.') curExprIsFrac = false;
 		updateScreen(screenText.slice(0, -1));
 	} else {
 		clearScreen();
 	}
 }
 
-function appendData(kind, string)
+function appendData(type, string)
 {
-	let screenInnerText = String(document.getElementById('screen').innerText); 
-
-	if (kind >= BACKSPACE || kind <= CLEAR_SCR) return; 
+	let screenInnerText = document.getElementById('screen').innerText;	
+	if (type >= inputTypes.evaluation || type <= inputTypes.clearScreen) return; 
 	
-	if (inputType[inputTypeNum] == OPERATOR_APPEND) 
+	if (inputArray[inputArray.length - 1] === inputTypes.operator) 
 		screenInnerText += ' ';
 	
-	if (inputType[inputTypeNum] === CLEAR_SCR || (inputType[inputTypeNum] === EVALUATION && screenInnerText === '0')) {
-		inputType[inputTypeNum] = CLEAR_SCR; 
+	if (!(type === inputTypes.number && string === '.') && (inputArray[inputArray.length - 1] === inputTypes.clearScreen || (inputArray[inputArray.length - 1] === inputTypes.evaluation && screenInnerText === '0'))) {
+		inputArray[inputArray.length - 1] = inputTypes.clearScreen; 
 		screenInnerText = '';
 	}
 
-	if (kind === OPERATOR_APPEND) {
-		if (inputType[inputTypeNum] === OPERATOR_APPEND || inputType[inputTypeNum] === CLEAR_SCR) {
+	if (type === inputTypes.operator) {
+		if (inputArray[inputArray.length - 1] === inputTypes.operator || inputArray[inputArray.length - 1] === inputTypes.clearScreen) {
 			if ((string !== '+' && string !== '-')) return;
-			kind = NUMBER_SIGN;
+			type = inputTypes.numberSignal;
 			updateScreen(screenInnerText + string);
-		} else if (inputType[inputTypeNum] !== NUMBER_SIGN) {
+		} else if (inputArray[inputArray.length - 1] !== inputTypes.numberSignal) {
 			updateScreen(screenInnerText + ' ' + string + ' ');
 		} else {
 			return;
 		}
 
 		curExprIsFrac = false;
-		inputType[++inputTypeNum] = kind;
+		inputArray.push(type);
+
 		return;
 	}
 
-	if (kind === NUMBER && string === '.') {
+	if (type === inputTypes.number && string === '.') {
 		if (curExprIsFrac) return;
 		curExprIsFrac = true;
 	}
 
-	inputType[++inputTypeNum] = kind;
+	inputArray.push(type);
 	updateScreen(screenInnerText + string);
 }
 
 class PostFixExpression {
 	constructor(expression) {
+		this.stack = [];
+
 		const precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '%': 2};
 		const tokens = expression.split(' ').filter(item => item);
-
-		const outputQueue = [];
+		
 		const operatorStack = [];
 
 		for (let i = 0; i < tokens.length; ++i) {
 			if (/\d/.test(tokens[i])) { /* Digit, a good notice (no work) */
-				outputQueue.push(tokens[i]);
+				this.stack.push(tokens[i]);
 			} else { /* Operators... */
 				while (operatorStack.length > 0 && precedence[operatorStack[operatorStack.length - 1]] >= precedence[tokens[i]])
-					outputQueue.push(operatorStack.pop());
+					this.stack.push(operatorStack.pop());
 				operatorStack.push(tokens[i]);
 			}
 		}
 
 		while (operatorStack.length > 0)
-			outputQueue.push(operatorStack.pop());
+			this.stack.push(operatorStack.pop());
 
-		this.stack = outputQueue; 
+		console.log(tokens); 
 		console.log(this.stack); 
 	}
 
@@ -101,8 +110,11 @@ class PostFixExpression {
 			if (/\d/.test(this.stack[i])) {
 				stack.push(Number(this.stack[i]));
 			} else {
+				console.log(stack); 
+
 				const b = stack.pop(); 
-				const a = stack.pop();	
+				const a = stack.pop();
+
 				switch (this.stack[i]) {
 				case '+':
 					stack.push(a + b); break;
@@ -115,24 +127,26 @@ class PostFixExpression {
 				case '%':
 					stack.push(a % b); break;
 				}
+				
+				console.log(stack); 
 			}
 		}
-
+		
 		return stack.pop();
 	}
 };
 
 function evaluateExpression()
 {
-	if (inputType[inputTypeNum] === OPERATOR_APPEND || inputType[inputTypeNum] === NUMBER_SIGN) return;
+	if (inputArray[inputArray.length - 1] === inputTypes.operator || inputArray[inputArray.length - 1] === inputTypes.numberSignal) return;
+
 	let postFix = new PostFixExpression(document.getElementById('screen').innerText);
 	let result = postFix.solve();
 
-	inputTypeNum = 0;
-	inputType[inputTypeNum] = EVALUATION;
-
+	inputArray = [inputTypes.evaluation];
 	if (result % 1 !== 0) {
 		updateScreen(String(result.toFixed(2)));
+		curExprIsFrac = true;
 	} else {
 		updateScreen(String(result));
 	}
@@ -141,34 +155,21 @@ function evaluateExpression()
 function treatKeyboardInput(event)
 {
 	switch (event.key) {
-	case '0':
-		appendData(NUMBER, '0'); break;
-	case '1':
-		appendData(NUMBER, '1'); break;
-	case '2':
-		appendData(NUMBER, '2'); break;
-	case '3':
-		appendData(NUMBER, '3'); break;
-	case '4':
-		appendData(NUMBER, '4'); break;
-	case '5':
-		appendData(NUMBER, '5'); break;
-	case '6':
-		appendData(NUMBER, '6'); break;
-	case '7':
-		appendData(NUMBER, '7'); break;
-	case '8':
-		appendData(NUMBER, '8'); break;
-	case '9':
-		appendData(NUMBER, '9'); break;
-	case '/':
-		appendData(OPERATOR_APPEND, '/'); break;
-	case '*':
-		appendData(OPERATOR_APPEND, '*'); break;
-	case '+':
-		appendData(OPERATOR_APPEND, '+'); break;
-	case '-':
-		appendData(OPERATOR_APPEND, '-'); break;
+	case '0': appendData(inputTypes.number, '0'); break;
+	case '1': appendData(inputTypes.number, '1'); break;
+	case '2': appendData(inputTypes.number, '2'); break;
+	case '3': appendData(inputTypes.number, '3'); break;
+	case '4': appendData(inputTypes.number, '4'); break;
+	case '5': appendData(inputTypes.number, '5'); break;
+	case '6': appendData(inputTypes.number, '6'); break;
+	case '7': appendData(inputTypes.number, '7'); break;
+	case '8': appendData(inputTypes.number, '8'); break;
+	case '9': appendData(inputTypes.number, '9'); break;
+	case '/': appendData(inputTypes.operator, '/'); break;
+	case '*': appendData(inputTypes.operator, '*'); break;
+	case '+': appendData(inputTypes.operator, '+'); break;
+	case '-': appendData(inputTypes.operator, '-'); break;
+	case '.': appendData(inputTypes.number, '.'); break;
 	case 'Enter':
 	case '=':
 		evaluateExpression(); break;
@@ -177,8 +178,6 @@ function treatKeyboardInput(event)
 		deleteLast(); break;
 	case 'C':
 		clearScreen(); break;
-	case '.':
-		appendData(NUMBER, '.'); 
 	}
 
 }
